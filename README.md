@@ -41,12 +41,12 @@ visor-huts-aoc/
 
 ---
 
-## ⚙️ Requisits Previs del Sistema
+## ⚙️ Requeriments previs del sistema
 
 Abans de començar la instal·lació a qualsevol servidor, assegura't que compta amb els següents components del sistema:
 
 1. **Python 3.9 o superior** instal·lat de manera global.
-2. **Microsoft ODBC Driver for SQL Server (Driver 17 o 18)**: Requisit obligatori per poder connectar-se de manera interactiva a Microsoft Fabric mitjançant SQL Endpoint.
+2. **Microsoft ODBC Driver for SQL Server (Driver 17 o 18)**: Requeriment obligatori per poder connectar-se de manera interactiva a Microsoft Fabric mitjançant SQL Endpoint.
    * **Instal·lar a Windows**: Descarrega i executa el fitxer oficial `.msi` de [Microsoft ODBC Driver for SQL Server](https://learn.microsoft.com/sql/connect/odbc/download-odbc-driver-for-sql-server).
    * **Instal·lar a Linux (Ubuntu 20.04/22.04)**:
      ```bash
@@ -60,9 +60,9 @@ Abans de començar la instal·lació a qualsevol servidor, assegura't que compta
 
 ---
 
-## 📥 Guia d'Instal·lació Pas a Pas (Qualsevol Servidor)
+## 📥 Guia d'instal·lació Pas a Pas (Qualsevol Servidor)
 
-Sigueu al vostre ordinador local, un servidor Linux o Windows Server, aquests són els passos per posar-lo en marxa:
+Tant si sou al vostre ordinador local, un servidor Linux o Windows Server, aquests són els passos per posar-lo en marxa:
 
 ### Pas 1: Descarregar el codi de GitHub
 ```bash
@@ -91,12 +91,12 @@ python -m venv venv
   ```
 
 ### Pas 4: Instal·lar les Dependències i Llibreries
-El servidor llegirà la llista de requisits i es descarregarà de forma automàtica la versió de cada llibreria ideal per a la teva plataforma específica:
+El servidor llegirà la llista de requeriments i es descarregarà de forma automàtica la versió de cada llibreria ideal per a la teva plataforma específica:
 ```bash
 pip install -r requirements.txt
 ```
 
-### Pas 5: Executar l'Aplicació de Prova
+### Pas 5: Executar l'aplicació de prova
 ```bash
 python app.py
 ```
@@ -104,9 +104,9 @@ Obre el teu navegador a [http://localhost:5000](http://localhost:5000) o a l'IP 
 
 ---
 
-## 🌐 Configurar com a Servei Permanent en Producció
+## 🌐 Configurar com a servei permanent en producció
 
-Perquè l'aplicació funcioni a Internet de manera ininterrompuda (que no es tanqui en tancar la consola), es recomana configurar-la com a servei de sistema de fons:
+Perquè l'aplicació funcioni a Internet de manera ininterrompuda (que no es tanqui en tancar la consola), es recomana configurar-la com a servei de sistema:
 
 ### Opció A: En un Servidor Linux (Gunicorn + Nginx) - Recomanada
 Aquesta és l'opció estàndard per a servidors a Internet:
