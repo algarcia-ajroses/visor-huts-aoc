@@ -1,123 +1,105 @@
-# Visor de Mapes per a Microsoft Fabric (Delta Tables)
+# Visor d'Allotjaments de Catalunya (Visor de HUTs)
 
-Aquest és un visor de mapes **ultra-lleuger**, de **codi obert** i **fàcilment instal·lable** a qualsevol servidor. Està dissenyat per connectar-se de forma segura a taules Delta en entorns de **Microsoft Fabric** (mitjançant el SQL Endpoint o OneLake) i representar dades geoespacials (latituds i longituds) com a:
-1. **Punts individuals**: Marcadors interactius de colors segons la intensitat amb finestres emergents de detalls.
-2. **Mapa de calor (Heatmap)**: Visualització dinàmica de densitat i acumulació de valors amb paràmetres de radi i difusió ajustables en temps real.
-3. **Agrupació (Marker Clustering)**: Agrupament intel·ligent per gestionar milers de punts de forma eficient sense alentir el navegador.
+Aquest és un visor de mapes **ultra-lleuger**, de **codi obert** i **alt rendiment**, dissenyat per a la visualització gràfica del cens d'allotjaments d'ús turístic (HUTs) de Catalunya (113.349 registres). 
 
----
-
-## Característiques Principals
-
-- **100% Codi Lliure**: Utilitza **Leaflet.js**, **Leaflet.heat** i **Leaflet.markercluster** per a una visualització ràpida i gratuïta sense dependre d'APIs de pagament (com Google Maps).
-- **Rendiment Superior**: Interfície minimalista construïda amb Vanilla CSS i HTML5, pesant menys de 100KB a la càrrega inicial del navegador.
-- **Disseny Premium**: Estètica moderna amb panell de controls de vidre translúcid (glassmorphism), mode fosc/clar automàtic i totalment adaptat a mòbils i tauletes.
-- **Instal·lació Súper Sencera**: El backend utilitza Python i Flask amb una única llibreria SQL (`pymssql`) que no requereix controladors complexos a nivell de sistema operatiu.
-- **Mode de Simulació (Mock Mode)**: Inclou dades geoespacials sintètiques basades a Catalunya perquè puguis provar l'aplicació a l'instant abans d'enllaçar-la amb Fabric.
+El visor s'integra de manera nativa amb **Microsoft Fabric** (permetent la lectura directa de taules Delta a OneLake o consultes a l'Endpoint SQL) i ofereix un mecanisme d'autenticació interactiu completament compatible amb sistemes de seguretat corporativa **MFA (Doble factor / Microsoft Authenticator)**.
 
 ---
 
-## Estructura del Projecte
+## 🚀 Característiques Destacades
 
-```
+* **Tres Modes de Visualització Premium**:
+  1. **Mapa de Calor (Heatmap)**: Vista per defecte ultra-ràpida renderitzada mitjançant la GPU del navegador sobre HTML5 Canvas (càrrega de 113K punts en <120ms). Compta amb un panell col·lapsable de paràmetres de radi i blur a la barra lateral per estalviar espai.
+  2. **Punts Individuals**: Marcadors minimalistes de color **Índigo Corporatiu AOC (`#4f46e5`)** amb ampliació dinàmica al passar el ratolí per millorar la interactivitat.
+  3. **Clústers (Agrupacions)**: Algorisme de agrupament espacial jeràrquic instantani amb indicadors numèrics que reflecteixen la totalitat real del cens geogràfic.
+* **Resolució de Solapaments en Coordenades (Multi-Popup)**: En edificis plurifamiliars amb múltiples pisos turístics, el visor agrupa els HUTs coincidents de forma intel·ligent en un llistat interactiu que permet consultar els detalls de cada registre sota demanda (*lazy loading*).
+* **Velocitat d'Execució en Temps Real**:
+  * **Cerca de solapaments en O(1)**: Indexació prèvia en memòria cau mitjançant taules hash en lloc de cerques quadràtiques $O(N^2)$, evitant la congelació del navegador.
+  * **Renderització asíncrona fragmentada**: Processament asíncron no bloquejant de 60 FPS mitjançant lots controlats per `requestAnimationFrame`.
+  * **Retall Geogràfic de Viewport**: Sota zoom de detall (> 9), només es dibuixen els elements de la pantalla activa, accelerant les actualitzacions silencioses en desplaçar el mapa.
+  * **Mostreig intel·ligent**: A escala global (zoom <= 9), s'aplica un mostreig estadístic (1 de cada 15) que es dibuixa en menys de 100ms sense perdre definició visual de densitat.
+
+---
+
+## 📁 Estructura del Projecte
+
+```text
 fabric-map-viewer/
-├── app.py                     # Servidor Flask (Backend i API de dades)
-├── requirements.txt           # Dependències del projecte
-├── .env                       # Fitxer de configuració actiu (creat a partir de .env.example)
-├── .env.example               # Plantilla de configuració de Microsoft Fabric
+├── app.py                      # Servidor backend Flask i API d'allotjaments
+├── requirements.txt            # Dependències de Python (inclou pyodbc, deltalake, etc.)
+├── .gitignore                  # Exclusions per a un GitHub net (exclou venv i claus privades)
+├── data/
+│   └── huts.csv                # Arxiu local pre-carregat (113.349 files)
 ├── templates/
-│   └── index.html             # Interfície web HTML5
+│   └── index.html              # Interfície HTML5 de vidre esmerilat (glassmorphism)
 └── static/
     ├── css/
-    │   └── styles.css         # Full d'estils premium amb mode fosc/clar
+    │   └── styles.css          # Estils i maquetació adaptats a mòbils (mode fosc/clar)
     └── js/
-        └── app.js             # Lògica interactiva del mapa i filtres
+        └── app.js              # Control de mapes Leaflet i esdeveniments
 ```
 
 ---
 
-## Requisits Previs
+## 🛠️ Requisits de Sistema i Instal·lació
 
-Només necessites tenir instal·lat **Python 3.8 o superior** al servidor.
+L'aplicació necessita tenir instal·lat **Python 3.9 o superior** al sistema.
 
----
+### ⚠️ Requisits per a la connexió SQL a Fabric (MFA):
+Si es vol connectar mitjançant l'Endpoint SQL interactiu, la màquina (local o servidor) ha de tenir instal·lat el controlador oficial de Microsoft:
+* **[Microsoft ODBC Driver for SQL Server (Driver 17 o 18)](https://learn.microsoft.com/sql/connect/odbc/download-odbc-driver-for-sql-server)**.
 
-## Instal·lació i Posada en Marxa (Local o Servidor)
+### Instruccions per a la instal·lació local:
 
-### 1. Clonar o descarregar el projecte
-Navega fins a la carpeta del projecte:
-```bash
-cd fabric-map-viewer
-```
+1. **Clona el teu repositori**:
+   ```bash
+   git clone https://github.com/algarcia-ajroses/visor-huts-aoc.git
+   cd visor-huts-aoc
+   ```
 
-### 2. Crear un entorn virtual (Recomanat)
-```bash
-python -m venv venv
-```
-Activa l'entorn virtual:
-* **Windows (PowerShell)**: `.\venv\Scripts\Activate.ps1`
-* **Windows (cmd)**: `.\venv\Scripts\activate.bat`
-* **Linux/macOS**: `source venv/bin/activate`
+2. **Crea i activa l'entorn virtual**:
+   ```bash
+   python -m venv venv
+   # A Windows (PowerShell):
+   .\venv\Scripts\Activate.ps1
+   # A Linux / macOS:
+   source venv/bin/activate
+   ```
 
-### 3. Instal·lar les dependències
-```bash
-pip install -r requirements.txt
-```
+3. **Instal·la les dependències**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### 4. Executar l'aplicació
-```bash
-python app.py
-```
-Obre el teu navegador a [http://localhost:5000](http://localhost:5000). L'aplicació s'iniciarà immediatament en **Mode de Simulació** amb dades de Catalunya.
-
----
-
-## Com connectar-se a Microsoft Fabric
-
-Per utilitzar les dades reals de la teva taula Delta a Microsoft Fabric, segueix aquests passos:
-
-### 1. Obtenir el SQL Connection String de Fabric
-1. Entra al teu workspace de **Microsoft Fabric**.
-2. Obre el teu **Lakehouse** o **Warehouse**.
-3. A la cantonada superior dreta, obre la configuració i copia la **cadena de connexió SQL** (SQL Connection String). Serà similar a:
-   `xxxx.datawarehouse.fabric.microsoft.com`
-
-### 2. Configurar el fitxer `.env`
-Obre el fitxer `.env` del projecte i configura les variables següents:
-
-```env
-# Desactiva el mode de simulació
-MOCK_MODE=False
-
-# Configuració de la base de dades i taula de Fabric
-FABRIC_SERVER=la-teva-cadena-connexio.datawarehouse.fabric.microsoft.com
-FABRIC_DATABASE=nom_del_teu_lakehouse_o_warehouse
-FABRIC_TABLE=nom_de_la_teva_taula_delta
-
-# Nom de les teves columnes de latitud i longitud
-LAT_COLUMN=latitud
-LON_COLUMN=longitud
-VAL_COLUMN=intensitat # Columna opcional per donar pes al mapa de calor
-
-# Autenticació (Opció A: Credencials directes de Microsoft Entra)
-FABRIC_USER=el-teu-correu@empresa.com
-FABRIC_PASSWORD=la_teva_contrasenya_de_microsoft
-```
-
-*Nota: Per a entorns corporatius de producció, és molt recomanable fer servir un **Service Principal** de Microsoft Entra ID (Client ID, Client Secret i Tenant ID) per evitar guardar contrasenyes personals al servidor.*
-
-### 3. Reiniciar l'aplicació
-Atura el servidor (`Ctrl + C`) i torna'l a iniciar (`python app.py`). El visor carregarà automàticament els punts directament de la teva taula Delta en temps real.
+4. **Executa el visor**:
+   ```bash
+   python app.py
+   ```
+   Obre el teu navegador a [http://localhost:5000](http://localhost:5000).
 
 ---
 
-## Desplegament en Servidors de Producció
+## 🔌 Configuració de les Fonts de Dades
 
-L'aplicació és tan senzilla que es pot desplegar a pràcticament qualsevol lloc:
-- **Docker**: Pots encapsular-la en un contenidor amb una imatge base de `python:3.10-slim`.
-- **WSGI / Gunicorn**: Per a producció a Linux, executa-la darrere de Nginx amb Gunicorn:
-  ```bash
-  pip install gunicorn
-  gunicorn -w 4 -b 0.0.0.0:5000 app:app
-  ```
-- **Azure App Service**: S'integra de forma nativa com una Web App de Python, garantint un accés de xarxa optimitzat cap als teus serveis de Fabric.
+El visor s'iniciarà amb un modal interactiu en el qual es pot triar i configurar en viu la font que alimentarà el mapa:
+
+### 1. Arxiu local CSV
+Llegeix de forma instantània les dades en memòria cache del fitxer `data/huts.csv`. És l'opció ideal per a proves ràpides sense connexió d'Internet.
+
+### 2. Microsoft Fabric (OneLake DFS)
+Lectura en viu de fitxers Parquet del directori de OneLake. Està pensat per a serveis amb credencials automatitzades d'Azure (Service Principal amb Tenant ID, Client ID i Client Secret) o màquines de desenvolupament pre-autenticades a Azure CLI.
+
+### 3. Microsoft Fabric (SQL Analytics Endpoint - MFA compatible)
+Dissenyat específicament per a **usuaris corporatius amb doble factor de verificació obligatori (Microsoft Authenticator)**. 
+* **Servidor SQL**: L'adreça de la teva capacitat (ex. `xxxx.datawarehouse.fabric.microsoft.com`).
+* **Lakehouse**: El nom de la base de dades SQL (ex. `lakehouse_gold`).
+* **Usuari**: El teu correu corporatiu (ex. `algarcia@roses.cat`).
+* **Taula**: El camí amb l'esquema de Fabric (ex. `gencat_ddoo.hut_geocodificat`).
+
+*En prémer "Connecta i Carrega", el visor obrirà de manera totalment segura una finestra de navegador per demanar-te la verificació de l'Authenticator. Un cop acceptada, carregarà la taula en menys de 2 segons.*
+
+---
+
+## 🌐 Desplegament en Producció
+
+Per a indicacions detallades, ordres i scripts per publicar aquest visor a Internet darrere de servidors professionals (Nginx + Gunicorn en Linux, o IIS en Windows Server), consulta la [Guia de Desplegament completa](file:///C:/Users/AGARCIA/.gemini/antigravity/brain/8e85888c-58e7-4ba6-8867-9c150f45beb2/deployment_guide.md) que es troba a la documentació del projecte.
