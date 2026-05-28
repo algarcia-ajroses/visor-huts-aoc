@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor d'habitatges d'ús turístic</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Visor d'habitatges d'ús turístic (HUTs) de Catalunya a partir de taules Delta de Microsoft Fabric.">
+    <meta name="author" content="Antigravity Map Viewer">
+    
+    <!-- Google Fonts (Modern Typography) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS (Open Source Maps) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <!-- Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    
+    <!-- Estils del Visor (Premium Vanilla CSS) -->
+    <link rel="stylesheet" href="/static/css/styles.css?v=1.1.2">
+    
+    <!-- Lucide Icons para icons elegants -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="light-theme">
+    
+    <div class="app-container">
+        
+        <!-- Barra Lateral de Controls (Glassmorphism Sidebar) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-area" style="width: 100%;">
+                    <!-- Integració Premium del Logo de l'AOC sota demanda -->
+                    <div class="aoc-logo-container">
+                        <img id="aoc-logo" src="/static/logo/aoc-horitzontal-negre.svg" alt="Consorci AOC Logo" class="aoc-logo-img">
+                    </div>
+                    <div class="visor-title-container">
+                        <h1 class="visor-subheading" style="font-size: 1.25rem;">Visor de HUTs</h1>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-scroll">
+                
+                <!-- Panell de Visualització (Representació - Mapa de Calor Actiu per Defecte!) -->
+                <section class="control-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <h2><i data-lucide="layers"></i> Representació del Mapa</h2>
+                        <button class="theme-toggle-btn" id="theme-toggle" title="Canvia el tema visual" style="width: 32px; height: 32px; border-radius: 8px;">
+                            <i data-lucide="sun" class="sun-icon" style="width: 14px; height: 14px;"></i>
+                            <i data-lucide="moon" class="moon-icon" style="width: 14px; height: 14px;"></i>
+                        </button>
+                    </div>
+                    <div class="view-selector-grid">
+                        <button class="view-btn" data-view="points" id="btn-points">
+                            <i data-lucide="map-pin"></i>
+                            <span>Punts</span>
+                        </button>
+                        <button class="view-btn active" data-view="heatmap" id="btn-heatmap">
+                            <i data-lucide="flame"></i>
+                            <span>Calor</span>
+                        </button>
+                        <button class="view-btn" data-view="clusters" id="btn-clusters">
+                            <i data-lucide="layout-grid"></i>
+                            <span>Clústers</span>
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- Controls del Mapa de Calor (Visibles per defecte ja que Heatmap arrenca primer, però col·lapsables) -->
+                <section class="control-section" id="heatmap-controls">
+                    <h2 id="btn-toggle-heatmap-params" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%; user-select: none;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="sliders"></i> Paràmetres de Calor
+                        </span>
+                        <i data-lucide="chevron-down" id="heatmap-chevron" style="width: 16px; height: 16px; transition: transform 0.2s ease;"></i>
+                    </h2>
+                    <div id="heatmap-sliders-container" class="hidden" style="display: flex; flex-direction: column; gap: 16px; animation: scale-up 0.2s ease; margin-top: 4px;">
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span class="label">Radi de difusió</span>
+                                <span class="value" id="val-radius">12px</span>
+                            </div>
+                            <input type="range" id="input-radius" min="5" max="50" value="12" class="slider">
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span class="label">Difuminat (Blur)</span>
+                                <span class="value" id="val-blur">15px</span>
+                            </div>
+                            <input type="range" id="input-blur" min="2" max="30" value="15" class="slider">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Panell de Filtres -->
+                <section class="control-section">
+                    <h2><i data-lucide="filter"></i> Filtres de Geolocalització</h2>
+                    
+                    <!-- Filtre per Municipi -->
+                    <div class="filter-group">
+                        <label for="filter-municipality"><span class="label-text">Filtre per Municipi</span></label>
+                        <div class="select-wrapper">
+                            <select id="filter-municipality">
+                                <option value="all">Tots els municipis (Catalunya)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtre per Precisió de Geolocalització -->
+                    <div class="filter-group">
+                        <label for="filter-precision"><span class="label-text">Precisió de la Localització</span></label>
+                        <div class="select-wrapper">
+                            <select id="filter-precision">
+                                <option value="all">Totes les precisions (113K)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtre per Capacitat d'Allotjament -->
+                    <div class="filter-group">
+                        <div class="slider-header">
+                            <span class="label">Mínim de Places (Capacitat)</span>
+                            <span class="value" id="val-min-places">1</span>
+                        </div>
+                        <input type="range" id="input-min-places" min="1" max="50" value="1" class="slider">
+                    </div>
+                </section>
+                
+                <!-- Panell de Mètriques / Estadístiques -->
+                <section class="control-section metrics-section">
+                    <h2><i data-lucide="bar-chart-3"></i> Estadístiques en Temps Real</h2>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <span class="metric-label">Allotjaments Carregats</span>
+                            <span class="metric-value" id="metric-points-count">0</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">Places Mitjanes</span>
+                            <span class="metric-value" id="metric-avg-intensity">0.0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="change-source-container" style="margin-top: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; border-top: 1px solid var(--border-glass); padding-top: 14px; width: 100%;">
+                        <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; justify-content: center; width: 100%;">
+                            <span>Font activa:</span>
+                            <span id="active-source-text" style="font-weight: 700; color: #4f46e5; background: rgba(79,70,229,0.08); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(79,70,229,0.15);">Carregant...</span>
+                        </div>
+                        <button class="btn-change-source" id="btn-change-source" title="Canvia entre Microsoft Fabric i el fitxer CSV local" style="width: 100%;">
+                            <i data-lucide="database"></i>
+                            <span>Canvia font de dades</span>
+                        </button>
+                    </div>
+                </section>
+                
+            </div>
+        </aside>
+        
+        <!-- Toggle de Barra Lateral per a mòbils -->
+        <button class="mobile-toggle" id="mobile-sidebar-toggle" aria-label="Obre el tauler de controls">
+            <i data-lucide="menu"></i>
+        </button>
+        
+        <!-- Contenidor del Mapa principal -->
+        <main class="map-wrapper">
+            <div id="map"></div>
+            
+            <!-- Indicador de Càrrega (Glassmorphic Loader) -->
+            <div class="map-overlay-loader" id="loader">
+                <div class="loader-card">
+                    <div class="spinner"></div>
+                    <p>Processant dades d'allotjaments (113K registres)...</p>
+                    <span style="font-size:0.75rem; color:var(--text-secondary)">Carregant mapa de calor instantani...</span>
+                </div>
+            </div>
+            
+            <!-- Finestra d'Error en cas de fallida -->
+            <div class="map-overlay-error hidden" id="error-overlay">
+                <div class="error-card">
+                    <div class="error-icon">
+                        <i data-lucide="alert-triangle"></i>
+                    </div>
+                    <h3>Error de dades</h3>
+                    <p class="error-message" id="error-message-text">No s'ha pogut carregar el fitxer de dades geoespacials.</p>
+                    
+                    <div class="error-instructions">
+                        <h4>Motius possibles:</h4>
+                        <ul id="error-instructions-list">
+                            <li>El fitxer CSV a la ruta <code>data/huts.csv</code> té un format incorrecte.</li>
+                            <li>Falten els camps de coordenades <code>coordenada_lat</code> o <code>coordenada_lon</code>.</li>
+                            <li>La línia del servidor té una fallida de memòria per l'alta quantitat de punts.</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="btn-primary" id="btn-retry-mock">
+                        <i data-lucide="play"></i> Activa les Dades de Simulació
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+    </div>
+    
+    <!-- Modal de connexió inicial (Glassmorphic Connection Modal) -->
+    <div id="connection-modal" class="connection-modal-overlay hidden">
+        <div class="connection-modal-card">
+            <div class="connection-modal-header">
+                <div class="aoc-logo-container-modal">
+                    <img src="/static/logo/aoc-horitzontal-negre.svg" alt="Consorci AOC" id="aoc-logo-modal" class="aoc-logo-img-modal">
+                </div>
+                <h2>Configuració de la Font de Dades</h2>
+                <p>Tria com vols alimentar el Visor de HUTs de Catalunya</p>
+            </div>
+            
+            <div class="connection-tabs">
+                <button class="tab-btn active" id="tab-csv" data-tab="csv">
+                    <i data-lucide="file-text"></i>
+                    <span>Arxiu local CSV</span>
+                </button>
+                <button class="tab-btn" id="tab-fabric" data-tab="fabric">
+                    <i data-lucide="cloud"></i>
+                    <span>Microsoft Fabric</span>
+                </button>
+            </div>
+            
+            <div class="connection-tab-content">
+                <!-- Contingut CSV -->
+                <div id="content-csv" class="tab-content-panel active">
+                    <div class="source-info-box">
+                        <i data-lucide="info"></i>
+                        <p>Llegeix el fitxer <code>data/huts.csv</code> pre-desat de <strong>113.349 allotjaments</strong> a la memòria del servidor. Ràpid i sense configuració.</p>
+                    </div>
+                </div>
+                
+                <!-- Contingut Fabric -->
+                <div id="content-fabric" class="tab-content-panel">
+                    <div class="source-info-box">
+                        <i data-lucide="shield-check"></i>
+                        <p>Es connecta en viu a <strong>Microsoft Fabric</strong> utilitzant lectura directa OneLake o bé l'Endpoint SQL per a comptes amb doble factor d'autenticació (MFA).</p>
+                    </div>
+                    
+                    <form id="fabric-form" class="fabric-connection-form" onsubmit="event.preventDefault();">
+                        <!-- Selector de Mètode de Connexió a Fabric -->
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label style="font-weight: 600; font-size: 0.8rem; margin-bottom: 6px; display: block; color: var(--text-primary);">Mètode de connexió</label>
+                            <div class="view-selector-grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <button type="button" class="view-btn active" id="btn-fabric-method-dfs" style="padding: 8px; font-size: 0.74rem; min-height: 38px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                    <i data-lucide="database" style="width: 14px; height: 14px;"></i>
+                                    <span>OneLake DFS</span>
+                                </button>
+                                <button type="button" class="view-btn" id="btn-fabric-method-sql" style="padding: 8px; font-size: 0.74rem; min-height: 38px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                    <i data-lucide="key-round" style="width: 14px; height: 14px;"></i>
+                                    <span>SQL Endpoint (MFA)</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Panel 1: Delta OneLake DFS Direct Files -->
+                        <div id="fabric-dfs-panel" class="fabric-method-panel">
+                            <div class="form-group">
+                                <label for="input-fabric-url">URL de la taula Delta a OneLake</label>
+                                <input type="url" id="input-fabric-url" placeholder="https://onelake.dfs.fabric.microsoft.com/...">
+                                <span class="help-text">Exemple: https://onelake.dfs.fabric.microsoft.com/pd_ml_roses/lakehouse_gold.lakehouse/Tables/gencat_ddoo/hut_geocodificat</span>
+                            </div>
+                            
+                            <div class="advanced-credentials-toggle" id="btn-toggle-advanced" style="margin-top: 10px;">
+                                <span>Paràmetres d'autenticació avançats (Opcional)</span>
+                                <i data-lucide="chevron-down" id="advanced-chevron"></i>
+                            </div>
+                            
+                            <div class="advanced-credentials-fields hidden" id="advanced-fields">
+                                <p class="fields-subtitle">Si es deixen en blanc, s'utilitzarà DefaultAzureCredential (crecencials del sistema Azure CLI/PowerShell)</p>
+                                <div class="form-group">
+                                    <label for="input-tenant-id">Azure Tenant ID</label>
+                                    <input type="text" id="input-tenant-id" placeholder="Exemple: a1b2c3d4-e5f6-...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="input-client-id">Azure Client ID (App ID)</label>
+                                    <input type="text" id="input-client-id" placeholder="Exemple: f5e4d3c2-b1a0-...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="input-client-secret">Azure Client Secret</label>
+                                    <input type="password" id="input-client-secret" placeholder="••••••••••••••••••••">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel 2: SQL Analytics Endpoint ODBC Interactive MFA -->
+                        <div id="fabric-sql-panel" class="fabric-method-panel hidden">
+                            <div class="form-group">
+                                <label for="input-sql-server">Servidor SQL Analytics Endpoint</label>
+                                <input type="text" id="input-sql-server" value="xgqkqn3udbou5mpvcecayhah7q-6s5cqtxjavke3emevmrucz7b5e.datawarehouse.fabric.microsoft.com" placeholder="xxxx-yyyy.sqlendpoint.fabric.microsoft.com">
+                                <span class="help-text">Es troba a les propietats de la Lakehouse a Fabric</span>
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label for="input-sql-db">Base de Dades / Lakehouse (Nom complet)</label>
+                                <input type="text" id="input-sql-db" value="lakehouse_gold" placeholder="Exemple: lakehouse_gold">
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label for="input-sql-user">Usuari Corporatiu (Correu Microsoft)</label>
+                                <input type="email" id="input-sql-user" value="algarcia@roses.cat" placeholder="correu@empresa.com">
+                                <span class="help-text">S'obrirà una finestra del navegador per a l'autenticació interactiva amb l'Authenticator</span>
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label for="input-sql-table">Nom de la Taula</label>
+                                <input type="text" id="input-sql-table" value="gencat_ddoo.hut_geocodificat" placeholder="Exemple: hut_geocodificat">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="connection-error-msg" class="connection-error-box hidden">
+                <i data-lucide="alert-circle"></i>
+                <span id="connection-error-text">Error de connexió.</span>
+            </div>
+            
+            <div class="connection-modal-footer">
+                <button class="btn-primary-modal" id="btn-connect-load">
+                    <i data-lucide="play"></i>
+                    <span>Connecta i Carrega</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Leaflet Heatmap Plugin -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    
+    <!-- Leaflet MarkerCluster Plugin -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    
+    <!-- Aplicació JavaScript del Visor -->
+    <script src="/static/js/app.js?v=1.1.2"></script>
+</body>
+</html>

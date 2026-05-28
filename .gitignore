@@ -1,0 +1,22 @@
+# Entorns Virtuals de Python
+venv/
+.venv/
+env/
+ENV/
+
+# Caching de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Dades de configuració i credencials privades
+data/config.json
+.env
+
+# Fitxers de sistema operatiu i IDEs
+.idea/
+.vscode/
+Thumbs.db
+ehthumbs.db
+Desktop.ini

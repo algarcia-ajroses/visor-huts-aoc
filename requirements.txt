@@ -1,0 +1,7 @@
+Flask
+pandas
+pymssql
+python-dotenv
+deltalake
+azure-identity
+pyodbc
