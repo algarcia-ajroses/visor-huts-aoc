@@ -4,6 +4,8 @@ Aquest és un visor de mapes **ultra-lleuger**, de **codi obert** i **alt rendim
 
 El visor s'integra de manera nativa amb **Microsoft Fabric** (permetent la lectura directa de taules Delta a OneLake o consultes a l'Endpoint SQL) i ofereix un mecanisme d'autenticació interactiu completament compatible amb sistemes de seguretat corporativa **MFA (Doble factor / Microsoft Authenticator)**.
 
+![Vista del Visor de HUTs](visor1.png)
+
 ---
 
 ## 🚀 Característiques Destacades
