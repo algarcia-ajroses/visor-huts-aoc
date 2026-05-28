@@ -165,8 +165,21 @@ Si el vostre organisme requereix desplegar-lo sobre Windows Server corporatiu:
 
 ---
 
-## 🔌 Connectar-se a les Dades de Microsoft Fabric
+## 🔌 Configuració de les Fonts de Dades
 
-Un cop la web estigui activa, el modal inicial et permetrà triar i desar les teves credencials corporatives:
+El Visor de HUTs de Catalunya disposa de dos mètodes d'alimentació de dades, completament configurables de manera gràfica a través de l'assistent inicial de la pròpia interfície web:
 
-* **Mode SQL Endpoint (MFA Compatible)**: Introduïu les dades de connexió del vostre SQL Analytics Endpoint de Fabric i el correu corporatiu (`algarcia@roses.cat`). El sistema obrirà automàticament una finestra del navegador al servidor per demanar l'aprovació del vostre **Microsoft Authenticator (doble factor)**. Un cop acceptat, importarà les taules directament en menys de 2 segons de forma transparent.
+### Opció A: Arxiu local CSV (Pre-carregat)
+* **Ubicació**: A la carpeta `data/` del projecte es troba el fitxer `huts.csv` que conté la totalitat dels **113.349 registres** geocodificats dels allotjaments de Catalunya.
+* **Ús**: Aquesta opció funciona a l'instant i fora de línia, ideal per a proves inicials o entorns sense connexió a Microsoft Fabric.
+
+### Opció B: Microsoft Fabric (Recomanat mitjançant SQL Endpoint + MFA)
+Per a entorns de producció on les dades s'actualitzen des de processos data pipeline de Fabric, es recomana utilitzar el mètode de connexió **SQL Endpoint (MFA)**. Aquest mètode és completament compatible amb els comptes de seguretat corporativa que tenen activat el doble factor d'autenticació (MFA / Microsoft Authenticator).
+
+Quan trieu aquest mètode a la interfície de configuració, s'han d'emplenar els següents camps:
+
+1. **Servidor SQL Analytics Endpoint**: L'adreça de connexió del servidor SQL Analytics de la vostra Lakehouse. Es pot obtenir copiant la cadena de connexió des de la secció de propietats de la Lakehouse a la interfície de Microsoft Fabric.
+2. **Base de Dades / Lakehouse (Nom complet)**: El nom complet de la Lakehouse o Base de dades d'on voleu extreure les dades.
+3. **Usuari Corporatiu (Correu Microsoft)**: La vostra adreça de correu electrònic corporatiu vinculada al compte de Microsoft. En clicar a connectar, s'obrirà de forma interactiva una finestra del navegador perquè aproveu l'inici de sessió amb l'Authenticator.
+4. **Nom de la Taula**: El nom complet de la taula que conté els allotjaments geocodificats. **IMPORTANT**: Cal especificar el nom complet de la taula incloent el seu esquema de dades (per exemple: `nom_esquema.nom_taula`).
+
