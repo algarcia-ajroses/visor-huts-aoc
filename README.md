@@ -24,7 +24,7 @@ El visor s'integra de manera nativa amb **Microsoft Fabric** (permetent la lectu
 ## 📁 Estructura del Projecte
 
 ```text
-fabric-map-viewer/
+visor-huts-aoc/
 ├── app.py                      # Servidor backend Flask i API d'allotjaments
 ├── requirements.txt            # Dependències de Python (llista de "receptes" per descarregar)
 ├── .gitignore                  # Exclusions per a un GitHub net (exclou venv i claus privades)
