@@ -1,4 +1,4 @@
-# Visor d'Allotjaments de Catalunya (Visor de HUTs)
+# Visor d'Habitatges d'Ús Turístic de Catalunya (Visor de HUTs)
 
 Aquest és un visor de mapes **ultra-lleuger**, de **codi obert** i **alt rendiment**, dissenyat per a la visualització gràfica del cens d'allotjaments d'ús turístic (HUTs) de Catalunya (113.349 registres). 
 
