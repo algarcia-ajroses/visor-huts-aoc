@@ -217,7 +217,7 @@
                 <p>Tria com vols alimentar el Visor de HUTs de Catalunya</p>
             </div>
             
-            <div class="connection-tabs">
+            <div class="connection-tabs" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
                 <button class="tab-btn active" id="tab-csv" data-tab="csv">
                     <i data-lucide="file-text"></i>
                     <span>Arxiu local CSV</span>
@@ -225,6 +225,10 @@
                 <button class="tab-btn" id="tab-fabric" data-tab="fabric">
                     <i data-lucide="cloud"></i>
                     <span>Microsoft Fabric</span>
+                </button>
+                <button class="tab-btn" id="tab-geojson" data-tab="geojson">
+                    <i data-lucide="globe"></i>
+                    <span>GeoJSON per URL</span>
                 </button>
             </div>
             
@@ -235,6 +239,21 @@
                         <i data-lucide="info"></i>
                         <p>Llegeix el fitxer <code>data/huts.csv</code> pre-desat de <strong>113.349 allotjaments</strong> a la memòria del servidor. Ràpid i sense configuració.</p>
                     </div>
+                </div>
+                
+                <!-- Contingut GeoJSON -->
+                <div id="content-geojson" class="tab-content-panel">
+                    <div class="source-info-box">
+                        <i data-lucide="globe"></i>
+                        <p>Descarrega un fitxer <strong>GeoJSON de punts</strong> des d'una URL de servidor o entorn web compartit públic (HTTPS).</p>
+                    </div>
+                    <form id="geojson-form" class="geojson-connection-form" onsubmit="event.preventDefault();" style="margin-top: 14px;">
+                        <div class="form-group">
+                            <label for="input-geojson-url">URL del fitxer GeoJSON</label>
+                            <input type="url" id="input-geojson-url" value="https://bpm.roses.cat:8085/visor/huts.geojson" placeholder="https://exemple.com/fitxer.geojson" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-glass); background: var(--bg-card); color: var(--text-primary);">
+                            <span class="help-text" style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px; display: block;">Per defecte: https://bpm.roses.cat:8085/visor/huts.geojson</span>
+                        </div>
+                    </form>
                 </div>
                 
                 <!-- Contingut Fabric -->

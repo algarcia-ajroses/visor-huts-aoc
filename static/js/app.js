@@ -81,8 +81,11 @@ document.addEventListener("DOMContentLoaded", () => {
         connectionModal: document.getElementById("connection-modal"),
         tabCsv: document.getElementById("tab-csv"),
         tabFabric: document.getElementById("tab-fabric"),
+        tabGeojson: document.getElementById("tab-geojson"),
         contentCsv: document.getElementById("content-csv"),
         contentFabric: document.getElementById("content-fabric"),
+        contentGeojson: document.getElementById("content-geojson"),
+        inputGeojsonUrl: document.getElementById("input-geojson-url"),
         btnToggleAdvanced: document.getElementById("btn-toggle-advanced"),
         advancedFields: document.getElementById("advanced-fields"),
         advancedChevron: document.getElementById("advanced-chevron"),
@@ -1014,12 +1017,17 @@ document.addEventListener("DOMContentLoaded", () => {
         activeConnectionMode = mode;
         el.tabCsv.classList.remove("active");
         el.tabFabric.classList.remove("active");
+        el.tabGeojson.classList.remove("active");
         el.contentCsv.classList.remove("active");
         el.contentFabric.classList.remove("active");
+        el.contentGeojson.classList.remove("active");
 
         if (mode === "csv") {
             el.tabCsv.classList.add("active");
             el.contentCsv.classList.add("active");
+        } else if (mode === "geojson") {
+            el.tabGeojson.classList.add("active");
+            el.contentGeojson.classList.add("active");
         } else {
             el.tabFabric.classList.add("active");
             el.contentFabric.classList.add("active");
@@ -1032,6 +1040,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     el.tabCsv.addEventListener("click", () => setConnectionTab("csv"));
     el.tabFabric.addEventListener("click", () => setConnectionTab("fabric"));
+    el.tabGeojson.addEventListener("click", () => setConnectionTab("geojson"));
 
     // Canviar mètode de Fabric (OneLake DFS vs SQL Endpoint)
     function setFabricMethod(method) {
@@ -1129,6 +1138,14 @@ document.addEventListener("DOMContentLoaded", () => {
             payload.sql_db = db;
             payload.sql_user = user;
             payload.sql_table = table || "hut_geocodificat";
+        } else if (finalMode === "geojson") {
+            const geojsonUrl = el.inputGeojsonUrl.value.trim();
+            if (!geojsonUrl) {
+                showModalError("Cal especificar la URL del fitxer GeoJSON.");
+                resetBtn();
+                return;
+            }
+            payload.geojson_url = geojsonUrl;
         }
 
         try {
@@ -1203,6 +1220,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (config.fabric_url) {
                         el.inputFabricUrl.value = config.fabric_url;
                     }
+                }
+            } else if (config.connection_mode === "geojson") {
+                setConnectionTab("geojson");
+                if (config.geojson_url) {
+                    el.inputGeojsonUrl.value = config.geojson_url;
                 }
             } else {
                 setConnectionTab("csv");

@@ -43,6 +43,7 @@ def load_data_into_cache():
     sql_db = ""
     sql_user = ""
     sql_table = "hut_geocodificat"
+    geojson_url = ""
     
     config = {}
     if os.path.exists(CONFIG_PATH):
@@ -58,6 +59,7 @@ def load_data_into_cache():
                 sql_db = config.get("sql_db", "")
                 sql_user = config.get("sql_user", "")
                 sql_table = config.get("sql_table", "hut_geocodificat")
+                geojson_url = config.get("geojson_url", "https://bpm.roses.cat:8085/visor/huts.geojson")
             print(f" [CONFIG] Mode de connexió actiu: {mode.upper()}")
         except Exception as e:
             print(f" [CONFIG ERROR] Error al llegir config.json: {str(e)}. Farem servir CSV.")
@@ -164,6 +166,54 @@ def load_data_into_cache():
             print("--------------------------------------------------")
             return False
             
+    elif mode == "geojson":
+        if not geojson_url:
+            print(" [WARNING] Mode GeoJSON seleccionat però la URL està buida.")
+            return False
+            
+        print(f" [GEOJSON] Carregant fitxer des de: {geojson_url}")
+        try:
+            import urllib.request
+            import ssl
+            # Desactivar validació de SSL per a certificats de desenvolupament o privats
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            
+            with urllib.request.urlopen(geojson_url, context=ctx, timeout=30) as response:
+                gdata = json.loads(response.read().decode('utf-8'))
+                
+            features = gdata.get("features", [])
+            print(f" [GEOJSON] Descarregats {len(features)} punts de la URL.")
+            
+            rows = []
+            for f in features:
+                properties = f.get("properties", {})
+                geometry = f.get("geometry", {})
+                coords = geometry.get("coordinates", [None, None])
+                
+                rows.append({
+                    'ide_inscripcio': properties.get('ide_inscripcio', 'Sense Registre'),
+                    'des_retol': properties.get('des_retol', 'Sense Nom Comercial'),
+                    'des_tipus_establiment': properties.get('des_tipus_establiment', 'Allotjament'),
+                    'des_municipi': properties.get('des_municipi', 'Desconegut'),
+                    'des_comarca': properties.get('des_comarca', 'Desconegut'),
+                    'num_total_places': properties.get('num_total_places', 1.0),
+                    'coordenada_lon': coords[0],
+                    'coordenada_lat': coords[1],
+                    'precisio_geocodificacio': properties.get('precisio_geocodificacio', 'No Definida')
+                })
+                
+            df = pd.DataFrame(rows)
+            _cached_source = "Arxiu GeoJSON remot (HTTPS)"
+            print(f" [GEOJSON] Conversió a DataFrame completada. Files: {len(df)}")
+            
+        except Exception as e:
+            _cached_error_msg = f"Error GeoJSON: {str(e)}"
+            print(f" [GEOJSON ERROR] Fallida en carregar/analitzar el GeoJSON remot: {str(e)}")
+            print("--------------------------------------------------")
+            return False
+            
     else: # mode == "csv"
         print(f" [CSV] Llegint fitxer local: {CSV_PATH}")
         if not os.path.exists(CSV_PATH):
@@ -229,6 +279,7 @@ def get_config():
     sql_db = ""
     sql_user = ""
     sql_table = "hut_geocodificat"
+    geojson_url = "https://bpm.roses.cat:8085/visor/huts.geojson"
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
@@ -239,6 +290,7 @@ def get_config():
                 sql_db = config.get("sql_db", "")
                 sql_user = config.get("sql_user", "")
                 sql_table = config.get("sql_table", "hut_geocodificat")
+                geojson_url = config.get("geojson_url", "https://bpm.roses.cat:8085/visor/huts.geojson")
         except Exception:
             pass
             
@@ -250,7 +302,8 @@ def get_config():
         "sql_server": sql_server,
         "sql_db": sql_db,
         "sql_user": sql_user,
-        "sql_table": sql_table
+        "sql_table": sql_table,
+        "geojson_url": geojson_url
     })
 
 @app.route('/api/setup_connection', methods=['POST'])
@@ -268,12 +321,15 @@ def setup_connection():
     sql_db = data.get("sql_db", "")
     sql_user = data.get("sql_user", "")
     sql_table = data.get("sql_table", "hut_geocodificat")
+    geojson_url = data.get("geojson_url", "https://bpm.roses.cat:8085/visor/huts.geojson")
     
     # Valida paràmetres
     if mode == "fabric" and not url:
         return jsonify({"success": False, "message": "Falta la URL de la taula de Microsoft Fabric."}), 400
     if mode == "fabric_sql" and (not sql_server or not sql_db or not sql_user):
         return jsonify({"success": False, "message": "Falten paràmetres de la connexió SQL a Microsoft Fabric (Servidor, Base de dades o Usuari)."}), 400
+    if mode == "geojson" and not geojson_url:
+        return jsonify({"success": False, "message": "Falta la URL del fitxer GeoJSON."}), 400
         
     try:
         # Crea el directori data si no existeix
@@ -289,7 +345,8 @@ def setup_connection():
             "sql_server": sql_server,
             "sql_db": sql_db,
             "sql_user": sql_user,
-            "sql_table": sql_table
+            "sql_table": sql_table,
+            "geojson_url": geojson_url
         }
         with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
             json.dump(config_data, f, ensure_ascii=False, indent=4)
