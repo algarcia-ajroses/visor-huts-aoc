@@ -169,7 +169,7 @@ Si el vostre organisme requereix desplegar-lo sobre Windows Server corporatiu:
 
 ## 🔌 Configuració de les Fonts de Dades
 
-El Visor de HUTs de Catalunya disposa de dos mètodes d'alimentació de dades, completament configurables de manera gràfica a través de l'assistent inicial de la pròpia interfície web:
+El Visor de HUTs de Catalunya disposa de tres mètodes d'alimentació de dades, completament configurables de manera gràfica a través de l'assistent inicial de la pròpia interfície web:
 
 ### Opció A: Arxiu local CSV (Pre-carregat)
 * **Ubicació**: A la carpeta `data/` del projecte es troba el fitxer `huts.csv` que conté la totalitat dels **113.349 registres** geocodificats dels allotjaments de Catalunya.
@@ -184,4 +184,9 @@ Quan trieu aquest mètode a la interfície de configuració, s'han d'emplenar el
 2. **Base de Dades / Lakehouse (Nom complet)**: El nom complet de la Lakehouse o Base de dades d'on voleu extreure les dades.
 3. **Usuari Corporatiu (Correu Microsoft)**: La vostra adreça de correu electrònic corporatiu vinculada al compte de Microsoft. En clicar a connectar, s'obrirà de forma interactiva una finestra del navegador perquè aproveu l'inici de sessió amb l'Authenticator.
 4. **Nom de la Taula**: El nom complet de la taula que conté els allotjaments geocodificats. **IMPORTANT**: Cal especificar el nom complet de la taula incloent el seu esquema de dades (per exemple: `nom_esquema.nom_taula`).
+
+### Opció C: Arxiu GeoJSON remot (HTTPS)
+* **Ús**: Es connecta en viu per descarregar un fitxer de punts dinàmic en format estàndard GeoJSON `FeatureCollection` des d'un servidor web o entorn de fitxers compartits. 
+* **Configuració**: Només cal omplir el següent camp:
+  1. **URL del fitxer GeoJSON**: L'adreça URL pública o corporativa on està allotjat el fitxer (ve per defecte preconfigurat amb la ruta: `https://bpm.roses.cat:8085/visor/huts.geojson`).
 
