@@ -242,6 +242,7 @@ def load_data_into_cache():
         df['des_municipi'] = df['des_municipi'].fillna("Desconegut")
         df['des_comarca'] = df['des_comarca'].fillna("Desconegut")
         df['num_total_places'] = df['num_total_places'].fillna(1.0).astype(float)
+        df['num_total_places'] = df['num_total_places'].replace(0.0, 1.0)
         df['precisio_geocodificacio'] = df['precisio_geocodificacio'].fillna("No Definida")
         df['ide_inscripcio'] = df['ide_inscripcio'].fillna("Sense Registre")
         
