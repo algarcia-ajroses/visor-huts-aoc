@@ -237,6 +237,7 @@ def load_data_into_cache():
     # 3. Neteja comuna de dades
     try:
         df = df.dropna(subset=['coordenada_lat', 'coordenada_lon'])
+        df = df[(df['coordenada_lat'] != 0.0) & (df['coordenada_lon'] != 0.0)]
         df['des_retol'] = df['des_retol'].fillna("Sense Nom Comercial")
         df['des_tipus_establiment'] = df['des_tipus_establiment'].fillna("Allotjament")
         df['des_municipi'] = df['des_municipi'].fillna("Desconegut")
