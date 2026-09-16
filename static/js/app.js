@@ -35,9 +35,23 @@ document.addEventListener("DOMContentLoaded", () => {
         activeMunicipality: "all",
         minPlaces: 1,
         
+        // Configuració de Mapa Base (ICGC Simplificat per defecte)
+        currentBasemap: (localStorage.getItem("visor_basemap") && localStorage.getItem("visor_basemap") in {icgc_simplificat:1, icgc:1, icgc_orto:1, osm:1}) 
+            ? localStorage.getItem("visor_basemap") 
+            : "icgc_simplificat",
+        
         // Cerca ultra-ràpida O(1) de solapaments
         overlappingMap: new Map()
     };
+
+    // Neteja i actualització de mapa per defecte a ICGC Simplificat
+    try {
+        localStorage.removeItem("visor_carto_api_key");
+        if (!localStorage.getItem("visor_basemap_v3")) {
+            localStorage.setItem("visor_basemap", "icgc_simplificat");
+            localStorage.setItem("visor_basemap_v3", "true");
+        }
+    } catch (e) {}
 
     // Inicialitzar Icones de Lucide
     lucide.createIcons();
@@ -50,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btnClusters: document.getElementById("btn-clusters"),
         heatmapControls: document.getElementById("heatmap-controls"),
         aocLogo: document.getElementById("aoc-logo"),
+        selectBasemap: document.getElementById("select-basemap"),
         
         // Inputs
         inputRadius: document.getElementById("input-radius"),
@@ -173,21 +188,69 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Diccionari de proveïdors de capes base (Únicament ICGC i OpenStreetMap)
+    const BASEMAPS = {
+        icgc: {
+            name: "ICGC Topogràfic",
+            getUrl: () => "https://geoserveis.icgc.cat/servei/catalunya/mapa-base/wmts/topografic/MON3857NW/{z}/{x}/{y}.png",
+            attribution: '&copy; <a href="https://www.icgc.cat" target="_blank">ICGC</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+            maxZoom: 19,
+            subdomains: [],
+            darkFilter: true
+        },
+        icgc_simplificat: {
+            name: "ICGC Simplificat",
+            getUrl: () => "https://geoserveis.icgc.cat/servei/catalunya/mapa-base/wmts/simplificat/MON3857NW/{z}/{x}/{y}.png",
+            attribution: '&copy; <a href="https://www.icgc.cat" target="_blank">ICGC</a>',
+            maxZoom: 19,
+            subdomains: [],
+            darkFilter: true
+        },
+        icgc_orto: {
+            name: "ICGC Satèl·lit (Ortofoto)",
+            getUrl: () => "https://geoserveis.icgc.cat/servei/catalunya/mapa-base/wmts/orto/MON3857NW/{z}/{x}/{y}.png",
+            attribution: '&copy; <a href="https://www.icgc.cat" target="_blank">ICGC</a>',
+            maxZoom: 19,
+            subdomains: [],
+            darkFilter: false
+        },
+        osm: {
+            name: "OpenStreetMap",
+            getUrl: () => "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+            maxZoom: 19,
+            subdomains: ['a', 'b', 'c'],
+            darkFilter: true
+        }
+    };
+
     function updateMapTiles() {
         if (state.tilesLayer) {
             state.map.removeLayer(state.tilesLayer);
         }
 
-        const tileUrl = state.currentTheme === "dark" 
-            ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+        const config = BASEMAPS[state.currentBasemap] || BASEMAPS.icgc_simplificat;
+        const tileUrl = config.getUrl(state.currentTheme);
 
-        const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+        const options = {
+            attribution: config.attribution,
+            maxZoom: config.maxZoom || 19
+        };
+        if (config.subdomains && config.subdomains.length > 0) {
+            options.subdomains = config.subdomains;
+        }
 
-        state.tilesLayer = L.tileLayer(tileUrl, {
-            attribution: attribution,
-            maxZoom: 20
-        }).addTo(state.map);
+        state.tilesLayer = L.tileLayer(tileUrl, options).addTo(state.map);
+
+        // Control del filtre fosc per a mapes que no tenen variant fosca nativa
+        const tilePane = state.map.getPane('tilePane');
+        if (tilePane) {
+            if (state.currentTheme === "dark" && config.darkFilter) {
+                tilePane.classList.add("dark-tiles-filtered");
+            } else {
+                tilePane.classList.remove("dark-tiles-filtered");
+            }
+        }
     }
 
     // ----------------------------------------------------
@@ -862,6 +925,16 @@ document.addEventListener("DOMContentLoaded", () => {
     el.btnPoints.addEventListener("click", () => setViewRepresentation("points"));
     el.btnHeatmap.addEventListener("click", () => setViewRepresentation("heatmap"));
     el.btnClusters.addEventListener("click", () => setViewRepresentation("clusters"));
+
+    // Gestor del canvi de Mapa Base (ICGC i OpenStreetMap)
+    if (el.selectBasemap) {
+        el.selectBasemap.value = state.currentBasemap;
+        el.selectBasemap.addEventListener("change", (e) => {
+            state.currentBasemap = e.target.value;
+            localStorage.setItem("visor_basemap", state.currentBasemap);
+            updateMapTiles();
+        });
+    }
 
     // Sliders del Mapa de Calor
     el.inputRadius.addEventListener("input", (e) => {

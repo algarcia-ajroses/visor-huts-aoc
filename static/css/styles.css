@@ -1136,3 +1136,9 @@ select:focus {
     height: 16px;
 }
 
+/* Filtre fosc per a mapes base com OpenStreetMap o ICGC en tema fosc */
+.dark-theme .leaflet-tile-pane.dark-tiles-filtered {
+    filter: brightness(0.65) invert(1) contrast(3) hue-rotate(200deg) saturate(0.25) brightness(0.75);
+}
+
+

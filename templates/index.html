@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     
     <!-- Estils del Visor (Premium Vanilla CSS) -->
-    <link rel="stylesheet" href="/static/css/styles.css?v=1.1.2">
+    <link rel="stylesheet" href="/static/css/styles.css?v=1.1.3">
     
     <!-- Lucide Icons para icons elegants -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -69,6 +69,21 @@
                             <i data-lucide="layout-grid"></i>
                             <span>Clústers</span>
                         </button>
+                    </div>
+                </section>
+                
+                <!-- Selector de Mapa Base (Basemap) -->
+                <section class="control-section">
+                    <h2><i data-lucide="map"></i> Mapa Base</h2>
+                    <div class="filter-group">
+                        <div class="select-wrapper">
+                            <select id="select-basemap" title="Tria el proveïdor de cartografia">
+                                <option value="icgc_simplificat" selected>ICGC Simplificat (Mínim)</option>
+                                <option value="icgc">ICGC Topogràfic (Oficial Catalunya)</option>
+                                <option value="icgc_orto">ICGC Satèl·lit (Ortofoto)</option>
+                                <option value="osm">OpenStreetMap (Lliure)</option>
+                            </select>
+                        </div>
                     </div>
                 </section>
                 
@@ -358,6 +373,6 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     
     <!-- Aplicació JavaScript del Visor -->
-    <script src="/static/js/app.js?v=1.1.2"></script>
+    <script src="/static/js/app.js?v=1.1.6"></script>
 </body>
 </html>

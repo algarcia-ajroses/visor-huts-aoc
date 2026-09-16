@@ -14,6 +14,9 @@ El visor s'integra de manera nativa amb **Microsoft Fabric** (permetent la lectu
   1. **Mapa de Calor (Heatmap)**: Vista per defecte ultra-ràpida renderitzada mitjançant la GPU del navegador sobre HTML5 Canvas (càrrega de 113K punts en <120ms). Compta amb un panell col·lapsable de paràmetres de radi i blur a la barra lateral per estalviar espai.
   2. **Punts Individuals**: Marcadors minimalistes de color **Índigo Corporatiu AOC (`#4f46e5`)** amb ampliació dinàmica al passar el ratolí per millorar la interactivitat.
   3. **Clústers (Agrupacions)**: Algorisme de agrupament espacial jeràrquic instantani amb indicadors numèrics que reflecteixen la totalitat real del cens geogràfic.
+* **Cartografia Oficial Integrada (ICGC i OpenStreetMap)**:
+  * Selecció dinàmica de mapa base entre **ICGC Simplificat** (per defecte, ideal per a visualitzacions d'alta densitat de dades), **ICGC Topogràfic Oficial de Catalunya**, **ICGC Satèl·lit (Ortofoto)** i **OpenStreetMap**.
+  * 100% de codi obert i dades públiques, sense requerir claus d'API externes ni generar marques d'aigua.
 * **Resolució de Solapaments en Coordenades (Multi-Popup)**: En edificis plurifamiliars amb múltiples pisos turístics, el visor agrupa els HUTs coincidents de forma intel·ligent en un llistat interactiu que permet consultar els detalls de cada registre sota demanda (*lazy loading*).
 * **Velocitat d'Execució en Temps Real**:
   * **Cerca de solapaments en O(1)**: Indexació prèvia en memòria cau mitjançant taules hash en lloc de cerques quadràtiques $O(N^2)$, evitant la congelació del navegador.
@@ -29,6 +32,7 @@ El visor s'integra de manera nativa amb **Microsoft Fabric** (permetent la lectu
 visor-huts-aoc/
 ├── app.py                      # Servidor backend Flask i API d'allotjaments
 ├── requirements.txt            # Dependències de Python (llista de "receptes" per descarregar)
+├── CHANGELOG.md                # Historial de versions i registre de canvis
 ├── .gitignore                  # Exclusions per a un GitHub net (exclou venv i claus privades)
 ├── data/
 │   └── huts.csv                # Arxiu local pre-carregat (113.349 files)
@@ -38,7 +42,7 @@ visor-huts-aoc/
     ├── css/
     │   └── styles.css          # Estils i maquetació adaptats a mòbils (mode fosc/clar)
     └── js/
-        └── app.js              # Lògica interactiva del mapa i filtres
+        └── app.js              # Lògica interactiva del mapa, filtres i capes ICGC
 ```
 
 ---
@@ -189,4 +193,13 @@ Quan trieu aquest mètode a la interfície de configuració, s'han d'emplenar el
 * **Ús**: Es connecta en viu per descarregar un fitxer de punts dinàmic en format estàndard GeoJSON `FeatureCollection` des d'un servidor web o entorn de fitxers compartits. 
 * **Configuració**: Només cal omplir el següent camp:
   1. **URL del fitxer GeoJSON**: L'adreça URL pública o corporativa on està allotjat el fitxer (ve per defecte preconfigurat amb la ruta: `https://bpm.roses.cat:8085/visor/huts.geojson`).
+
+---
+
+## 📜 Historial de Versions i Canvis
+
+Podeu consultar el registre detallat de canvis, novetats i versions a l'arxiu [CHANGELOG.md](CHANGELOG.md).
+* **v1.2.0 (Actual)**: Migració integral als mapes oficials de l'ICGC (Simplificat per defecte, Topogràfic i Ortofoto) i OpenStreetMap, eliminant dependències de CARTO i requeriments de claus d'API.
+* **v1.1.0**: Suport per a conjunts de dades GeoJSON remots per HTTPS i resolució de solapaments de coordenades amb multi-popup.
+* **v1.0.0**: Primera versió pública amb integració nativa a Microsoft Fabric OneLake i SQL Endpoint (MFA).
 
