@@ -1,6 +1,11 @@
 # Visor d'Habitatges d'Ús Turístic de Catalunya (Visor de HUTs)
 
+[![Demo en Directe](https://img.shields.io/badge/Demo%20en%20Directe-onrender.com-4f46e5?style=for-the-badge&logo=render&logoColor=white)](https://visor-huts-aoc.onrender.com/)
+
 Aquest és un visor de mapes **ultra-lleuger**, de **codi obert** i **alt rendiment**, dissenyat per a la visualització gràfica del cens d'allotjaments d'ús turístic (HUTs) de Catalunya (113.349 registres). 
+
+> 🌐 **Prova el Visor en línia en directe (sense instal·lar res)**:  
+> 👉 **[https://visor-huts-aoc.onrender.com/](https://visor-huts-aoc.onrender.com/)**
 
 El visor s'integra de manera nativa amb **Microsoft Fabric** (permetent la lectura directa de taules Delta a OneLake o consultes a l'Endpoint SQL) i ofereix un mecanisme d'autenticació interactiu completament compatible amb sistemes de seguretat corporativa **MFA (Doble factor / Microsoft Authenticator)**.
 
@@ -67,6 +72,8 @@ Abans de començar la instal·lació a qualsevol servidor, assegura't que compta
 ---
 
 ## 📥 Guia d'instal·lació Pas a Pas (Qualsevol Servidor)
+
+> 💡 **Nota**: Si només voleu explorar o provar el visor sense necessitat d'instal·lar res, podeu accedir directament a la versió en línia a: **[https://visor-huts-aoc.onrender.com/](https://visor-huts-aoc.onrender.com/)**.
 
 Tant si sou al vostre ordinador local, un servidor Linux o Windows Server, aquests són els passos per posar-lo en marxa:
 
